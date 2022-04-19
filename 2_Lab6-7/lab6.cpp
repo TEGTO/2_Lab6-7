@@ -159,7 +159,7 @@ void lab6()
 int main()
 {
 	setlocale(LC_ALL, "rus");
-	fill();
+	//fill();
 	lab6();
 	system("pause");
 	return 0;

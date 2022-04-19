@@ -8,10 +8,6 @@ struct Coor
 	int x;
 	int y;
 };
-enum Type
-{
-	full, path, tree = path, cycle
-};
 
 struct Graf
 {
@@ -63,38 +59,39 @@ void fill()
 	}
 	out.close();
 }
-struct Top
+struct Data
 {
 
 	int count;
 	int name;
-
+	int name2=0;
 };
 
 struct lFile
 {
-	void push_back(Top data);
+	void push_back(Data data);
 
 
 	void print();
 	int find(int x);
 	void print_v2(double* arr,int size);
 	void print_v3(int* sorted,Coor* arr, int size, int foo(Coor));
+	Data find_v2(int x);
 private:
 
 	int Size = 0;
 	struct Node
 	{
-		Top data;
+		Data data;
 		Node* next = nullptr;
 		Node* prev = nullptr;
-		Node(Top data) { this->data = data; }
+		Node(Data data) { this->data = data; }
 	};
 	Node* head = nullptr;
 	Node* tail = nullptr;
 
 };
-void lFile::push_back(Top data) {
+void lFile::push_back(Data data) {
 	Node* node = new Node(data);
 	if (head == nullptr) {
 		head = node;
@@ -193,6 +190,20 @@ void lFile::print_v3(int* sorted,Coor* arr, int size, int foo(Coor))
 	}
 }
 
+Data lFile::find_v2(int x)
+{
+	Node* iter = head;
+	while (iter->data.count != x)
+	{
+		if (iter->data.count == x)
+		{
+			return iter->data;
+		}
+		else iter = iter->next;
+	}
+	return iter->data;
+}
+
 
 
 void print(int** arr,int size)
@@ -249,7 +260,7 @@ void task1()
 		count = 0;
 		count_arr++;
 	}
-	Top d;
+	Data d;
 	for (int i = 0; i < size; i++)
 	{
 		d.name = i;
@@ -364,7 +375,7 @@ void task2()
 	{
 		cout <<"Length x"<<i<<" : " << all_length[i] << endl;
 	}
-	Top d;
+	Data d;
 	for (int i = 0; i < size; i++)
 	{
 		d.name = i;
@@ -476,7 +487,7 @@ void task3(int foo(Coor))
 	{
 		sorted_arr[i] = foo(arr[i]);
 	}
-	Top d;
+	Data d;
 	for (int i = 0; i < size; i++)
 	{
 		d.name = i;
@@ -534,6 +545,176 @@ void task3(int foo(Coor))
 	sort.print_v3(sorted_arr,arr, size,foo);
 
 }
+void QuickSort(int Array[], unsigned int N, int L, int R)
+{
+	int iter = L,
+		jter = R;
+
+	int middle = (R + L) / 2;
+
+	int x = Array[middle];
+	int w;
+
+	do
+	{
+		while (Array[iter] < x)
+		{
+			iter++;
+		}
+
+		while (x < Array[jter])
+		{
+			jter--;
+		}
+
+		if (iter <= jter)
+		{
+			w = Array[iter];
+			Array[iter] = Array[jter];
+			Array[jter] = w;
+
+			iter++;
+			jter--;
+		}
+	} while (iter < jter);
+
+	if (L < jter)
+	{
+		QuickSort(Array, N, L, jter);
+	}
+
+	if (iter < R)
+	{
+		QuickSort(Array, N, iter, R);
+	}
+}
+void task4()
+{
+	int g1 = 0;
+	int type;
+	int read;
+	lFile sort;
+	ifstream in("Grafs1.txt", ios::binary);
+
+	in.read((char*)&g1, sizeof(g1));
+	in.read((char*)&type, sizeof(type));
+	Graf g(g1, type);
+	for (int i = 0; i < g1; i++)
+	{
+		for (int j = 0; j < g1; j++)
+		{
+			in.read((char*)&read, sizeof(read));
+			g.mat[i][j] = read;
+		}
+	}
+	in.close();
+	int size = g.count_tops;
+	cout << "Unsorted:\n";
+	print(g.mat, g.count_tops);
+
+	double** length = new double* [size];
+	for (int i = 0; i < size; i++)
+	{
+		length[i] = new double[size];
+	}
+	for (size_t i = 0; i < size; i++)
+	{
+		for (size_t j = 0; j < size; j++)
+		{
+			length[i][j] = rand() % 100;
+		}
+	}
+	
+	for (size_t i = 0; i < size; i++)
+	{
+		for (size_t j = 0; j < size; j++)
+		{
+			cout << "x" << i << j << "= " << length[i][j] << endl;
+		}
+	}
+	int* long_length = new int[size * size];
+	int count = 0;
+	for (int i = 0; i < size; i++)
+	{
+		for (int j = 0; j < size; j++)
+		{
+			long_length[count] = length[i][j];
+			count++;
+		}
+	}
+	Data d;
+	count = 0;
+	int h = 0;
+	for (int i = 0; i < size*size; i++)
+	{
+
+		d.name = h;
+		
+		
+		d.name2 = count;
+		count++;
+		if (count == size)
+		{
+			count = 0;
+			h++;
+		}
+		d.count = long_length[i];
+		sort.push_back(d);
+
+	}
+	
+	cout << endl;
+	QuickSort(long_length, size*size, 0, size*size - 1);
+	
+	Data* sorted = new Data[size*size];
+	 count = 0;
+	for (int k = 0; k < size*size; k++)
+	{
+
+		sorted[count] = sort.find_v2(long_length[k]);
+		count++;
+	}
+	int** prev;
+	prev = new int* [size];
+	for (int i = 0; i < size; ++i)
+		prev[i] = new int[size];
+	for (int i = 0; i < size; i++)
+	{
+		for (int j = 0; j < size; j++)
+		{
+			prev[i][j] = g.mat[i][j];
+		}
+	}
+	count = 0;
+	for (int i = 0; i < size; i++)
+	{
+		for (int j = 0; j < size; j++)
+		{
+
+			g.mat[i][j] = prev[sorted[count].name][sorted[count].name2];
+			count++;
+		}
+		
+	}
+	cout << "Sorted:\n";
+	print(g.mat, g.count_tops);
+
+	for (int i = 0; i < size * size; i++)
+	{
+		for (int j = 0; j < size; j++)
+		{
+			for (int k = 0; k < size; k++)
+			{
+				if (long_length[i] == length[j][k])
+				{
+					cout << "x" << j << k << "=" << long_length[i] << endl;
+				}
+			}
+		}
+	}
+}
+	
+
 int main()
 {
 	setlocale(LC_ALL, "rus");
@@ -541,6 +722,7 @@ int main()
 	//task1();
 	//task2();
 	//task3(foo);
+	//task4();
 	system("pause");
 	return 0;
 }
